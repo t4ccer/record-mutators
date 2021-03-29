@@ -2,7 +2,6 @@
 {-# LANGUAGE FlexibleInstances  #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TemplateHaskell    #-}
-{-# OPTIONS_GHC -Wno-missing-signatures #-}
 
 module Main where
 
@@ -12,24 +11,29 @@ import           Data.Mergeable
 import           GHC.Generics
 
 data User m = User
-  { name :: m String
-  , age  :: m Int
-  , uid  :: Int
+  { userId        :: Int
+  , userFirstName :: m String
+  , userLastName  :: m String
+  -- milion other fields
   }
   deriving (Generic)
-deriving instance Show (User Identity)
-deriving instance Show (User Maybe)
+
 $(mkMergeable ''User)
 
-userMod :: User Maybe
-userMod = def {name = pure "Mike"}
+type UserData = User Identity
+type UserMutation = User Maybe
 
-user :: User Identity
-user = User (pure "John") (pure 42) 1
+deriving instance Show UserData
+deriving instance Show UserMutation
+
+userMod :: UserMutation
+userMod = def {userFirstName = pure "Mike"}
+
+user :: UserData
+user = User  1 (pure "John") (pure "Smith")
 
 main :: IO ()
 main = do
   print user
   print userMod
   print $ merge user userMod
-
